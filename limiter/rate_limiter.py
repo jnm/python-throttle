@@ -16,12 +16,40 @@ class RateLimiter(object):
         :param interval: int, or we try to ceil, no smaller than 1
         :param counter: subclass of or one with all methods of AbstractionCounter
         """
-        assert threshold >= 0
-        assert interval >= 1
-        self._threshold = int(math.ceil(threshold))
-        self._interval = int(math.ceil(interval))
+        try:
+            threshold()
+        except TypeError:
+            self._static_threshold = threshold
+        else:
+            self._dynamic_threshold = threshold
+
+        try:
+            interval()
+        except TypeError:
+            self._static_interval = interval
+        else:
+            self._dynamic_interval = interval
+
         self._prefix = "rate-limiter:" + name_space + "{}"
         self._counter = counter
+
+    @property
+    def _threshold(self):
+        try:
+            val = self._static_threshold
+        except AttributeError:
+            val = self._dynamic_threshold()
+        assert val >= 0
+        return int(math.ceil(val))
+
+    @property
+    def _interval(self):
+        try:
+            val = self._static_interval
+        except AttributeError:
+            val = self._dynamic_interval()
+        assert val >= 1
+        return int(math.ceil(val))
 
     def exceeded(self, iid):
         current = self._counter.add_key(self._prefix.format(iid), self._interval)
