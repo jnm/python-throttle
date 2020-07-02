@@ -1,5 +1,6 @@
 import time
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+import unittest
+#from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
 from unittest import TestCase
 
@@ -61,6 +62,7 @@ class TestCounter(TestCase):
             self.assertEqual(0, tf.current(key))
             tf.reset(key)
 
+    @unittest.skip('not backporting to python 2')
     def test_naive_pressure_test(self):
         """simply repeating, multi thread or multi process
         run all the repeat, and test the sum of the result

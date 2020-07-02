@@ -1,19 +1,21 @@
 import time
 import uuid
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 
 from redis import StrictRedis
 
 __all__ = ['AbstractionCounter', 'BaseRedisCounter', 'SlidingRedisCounter', 'FixedWindowRedisCounter']
 
 
-class AbstractionCounter(ABC):
+class AbstractionCounter(object):
+    __metaclass__ = ABCMeta
+
     @abstractmethod
-    def add_key(self, key, expired) -> int:
+    def add_key(self, key, expired):
         """increase the counter and return current number"""
 
     @abstractmethod
-    def current(self, key) -> int:
+    def current(self, key):
         """pass return current numbers"""
 
     @abstractmethod
@@ -22,7 +24,7 @@ class AbstractionCounter(ABC):
 
 
 class BaseRedisCounter(AbstractionCounter):
-    def __init__(self, redis: StrictRedis):
+    def __init__(self, redis):
         self.redis = redis
 
 
@@ -69,6 +71,8 @@ class FixedWindowRedisCounter(BaseRedisCounter):
     def add_key(self, key, expired):
         """use lua script to avoid race condition"""
         multiply = self.redis.register_script(self.lua_incr)
+        if type(expired) is float:
+            import pdb; pdb.set_trace()
         return multiply([key, expired])
 
     def current(self, key):

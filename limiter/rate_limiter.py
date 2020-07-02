@@ -7,10 +7,10 @@ from .counter import AbstractionCounter, SlidingRedisCounter, FixedWindowRedisCo
 __all__ = ['FixedWindowLimiter', 'SlidingWindowLimiter']
 
 
-class RateLimiter:
+class RateLimiter(object):
     """rate limiter, please give it a counter implementing all methods of AbstractionCounter"""
 
-    def __init__(self, threshold, interval, counter: AbstractionCounter, name_space="default"):
+    def __init__(self, threshold, interval, counter, name_space="default"):
         """
         :param threshold: int, or we try to ceil, no smaller than 0
         :param interval: int, or we try to ceil, no smaller than 1
@@ -18,8 +18,8 @@ class RateLimiter:
         """
         assert threshold >= 0
         assert interval >= 1
-        self._threshold = math.ceil(threshold)
-        self._interval = math.ceil(interval)
+        self._threshold = int(math.ceil(threshold))
+        self._interval = int(math.ceil(interval))
         self._prefix = "rate-limiter:" + name_space + "{}"
         self._counter = counter
 
@@ -40,7 +40,7 @@ class FixedWindowLimiter(RateLimiter):
     """
 
     def __init__(self, threshold, interval, redis_config, name_space="default"):
-        super().__init__(threshold, interval, FixedWindowRedisCounter(StrictRedis(**redis_config)), name_space)
+        super(FixedWindowLimiter, self).__init__(threshold, interval, FixedWindowRedisCounter(StrictRedis(**redis_config)), name_space)
 
 
 class SlidingWindowLimiter(RateLimiter):
@@ -49,4 +49,4 @@ class SlidingWindowLimiter(RateLimiter):
     """
 
     def __init__(self, threshold, interval, redis_config, name_space="default"):
-        super().__init__(threshold, interval, SlidingRedisCounter(StrictRedis(**redis_config)), name_space)
+        super(SlidingWindowLimiter, self).__init__(threshold, interval, SlidingRedisCounter(StrictRedis(**redis_config)), name_space)

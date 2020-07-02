@@ -1,6 +1,7 @@
 import random
 import time
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+import unittest
+#from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
 from unittest import TestCase
 
@@ -47,6 +48,7 @@ class TestRateLimiter(TestCase):
         for maker in self.test_limiter_factory:
             self.race_condition_test(maker)
 
+    @unittest.skip('not backporting to python 2')
     def race_condition_test(self, make_limiter):
         """reject time should be the same no mater running in one thread , multi thread or multi process
         for the same threshold
@@ -78,7 +80,7 @@ class TestRateLimiter(TestCase):
         self.assertEqual(multi_thread, single_thread)
 
 
-def _repeat_attempt(maker, key, threshold_attempt) -> int:
+def _repeat_attempt(maker, key, threshold_attempt):
     """ test attempt failure
     :return: blocked times
     """
